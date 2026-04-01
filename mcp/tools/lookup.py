@@ -1,9 +1,8 @@
 from typing import Annotated
 
-import httpx
 from fastmcp.tools import tool
 
-from config import FHIR_SERVER_URL
+from fhir_terminology_http import fhir_get, is_fhir_error_payload
 
 
 @tool
@@ -16,25 +15,15 @@ async def lookup_code(
     Performs a $lookup operation on the configured FHIR terminology server,
     returning the display name, definition and properties of the code.
     """
-    params = {"system": system, "code": code}
+    data = await fhir_get(
+        "/CodeSystem/$lookup",
+        {"system": system, "code": code},
+        error_message=f"Error looking up code '{code}' in system '{system}'",
+    )
+    if is_fhir_error_payload(data):
+        return data
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.get(
-            f"{FHIR_SERVER_URL}/CodeSystem/$lookup",
-            params=params,
-            headers={"Accept": "application/fhir+json"},
-        )
-
-    if response.status_code != 200:
-        return {
-            "error": True,
-            "status_code": response.status_code,
-            "message": f"Error looking up code '{code}' in system '{system}'",
-            "details": response.text[:500],
-        }
-
-    data = response.json()
-    result = {"system": system, "code": code}
+    result: dict = {"system": system, "code": code}
 
     for param in data.get("parameter", []):
         name = param.get("name")
