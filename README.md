@@ -23,8 +23,6 @@ It is **not** a terminology server. It does not store code systems or ValueSets.
 - **Ground answers in authoritative terminology** — Assistants can call `lookup_code` to verify a code and display string before suggesting documentation or code.
 - **Swap backends** — Use the public terminology service for demos, or a private endpoint for restricted or local code systems.
 
-Today the wrapper exposes **`lookup_code`** (`CodeSystem/$lookup`). Additional tools (e.g. `$validate-code`, `$expand`, `$translate`) can be added under `mcp/tools/` using the same pattern.
-
 ## Prerequisites
 
 - Python 3.10+
