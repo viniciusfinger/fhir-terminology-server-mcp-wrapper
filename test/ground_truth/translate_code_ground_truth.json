@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "terminology_service_base": "https://tx.fhir.org/r4",
+    "description": "Expected outputs for ConceptMap/$translate integration tests. Uses standard FHIR ConceptMaps bundled with the R4 specification. Match details are not asserted in ground truth because availability may vary by server; only structural fields and result flags are checked.",
+    "maintenance": "If tests fail, verify ConceptMap availability on the target server.",
+    "concept_maps_exercised": [
+      "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3",
+      "http://hl7.org/fhir/ConceptMap/cm-address-use-v3"
+    ]
+  },
+  "cases": [
+    {
+      "id": "admin_gender_male_to_v3",
+      "category": "happy_path",
+      "notes": "Translates FHIR administrative-gender 'male' to HL7 v3 AdministrativeGender via standard ConceptMap.",
+      "input": {
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3",
+        "result": true
+      }
+    },
+    {
+      "id": "admin_gender_female_to_v3",
+      "category": "happy_path",
+      "input": {
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "female",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "female",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3",
+        "result": true
+      }
+    },
+    {
+      "id": "address_use_home_to_v3",
+      "category": "happy_path",
+      "notes": "Translates FHIR address-use 'home' to HL7 v3 AddressUse via standard ConceptMap.",
+      "input": {
+        "system": "http://hl7.org/fhir/address-use",
+        "code": "home",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-address-use-v3"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://hl7.org/fhir/address-use",
+        "code": "home",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-address-use-v3",
+        "result": true
+      }
+    },
+    {
+      "id": "admin_gender_nonexistent_code",
+      "category": "edge_case",
+      "notes": "A valid ConceptMap but an invalid source code should yield result=false.",
+      "input": {
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "nonexistent-gender",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3"
+      },
+      "expected_output": {
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "nonexistent-gender",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3",
+        "result": false
+      }
+    },
+    {
+      "id": "admin_gender_with_target_system",
+      "category": "happy_path",
+      "notes": "Explicit target_system filter.",
+      "input": {
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3",
+        "target_system": "http://terminology.hl7.org/CodeSystem/v3-AdministrativeGender"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3",
+        "result": true
+      }
+    },
+    {
+      "id": "error_invalid_concept_map_url",
+      "category": "error_client",
+      "input": {
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male",
+        "concept_map_url": "http://invalid.example.org/ConceptMap/does-not-exist"
+      },
+      "expected_output": {
+        "error": true
+      }
+    },
+    {
+      "id": "error_invalid_source_system",
+      "category": "error_client",
+      "notes": "Invalid source system with valid ConceptMap should error.",
+      "input": {
+        "system": "http://invalid-system.example.org/foo",
+        "code": "male",
+        "concept_map_url": "http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3"
+      },
+      "expected_output": {
+        "error": false,
+        "result": false
+      }
+    }
+  ]
+}
