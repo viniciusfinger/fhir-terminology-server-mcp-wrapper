@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "terminology_service_base": "https://tx.fhir.org/r4",
+    "description": "Expected outputs for CodeSystem/$lookup integration tests. Success cases assert only stable fields (system, code, display) so minor terminology edition bumps on the server do not break CI.",
+    "maintenance": "If tests fail after upstream content updates, refresh display strings from the same base URL. Error cases assert error and HTTP status only.",
+    "supported_code_systems_exercised": [
+      "http://snomed.info/sct",
+      "http://loinc.org",
+      "http://hl7.org/fhir/sid/icd-10-cm",
+      "http://hl7.org/fhir/sid/icd-10",
+      "http://www.nlm.nih.gov/research/umls/rxnorm"
+    ]
+  },
+  "cases": [
+    {
+      "id": "snomed_diabetes_mellitus",
+      "category": "happy_path",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "73211009"
+      },
+      "expected_output": {
+        "system": "http://snomed.info/sct",
+        "code": "73211009",
+        "display": "Diabetes mellitus"
+      }
+    },
+    {
+      "id": "snomed_clinical_finding_root",
+      "category": "happy_path",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "404684003"
+      },
+      "expected_output": {
+        "system": "http://snomed.info/sct",
+        "code": "404684003",
+        "display": "Clinical finding"
+      }
+    },
+    {
+      "id": "snomed_leading_zeros_normalized_display",
+      "category": "edge_case",
+      "notes": "Leading zeros; server returns canonical display.",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "073211009"
+      },
+      "expected_output": {
+        "system": "http://snomed.info/sct",
+        "code": "073211009",
+        "display": "Diabetes mellitus"
+      }
+    },
+    {
+      "id": "loinc_hemoglobin_mass_volume_blood",
+      "category": "happy_path",
+      "input": {
+        "system": "http://loinc.org",
+        "code": "718-7"
+      },
+      "expected_output": {
+        "system": "http://loinc.org",
+        "code": "718-7",
+        "display": "Hemoglobin [Mass/volume] in Blood"
+      }
+    },
+    {
+      "id": "loinc_glucose_mass_volume_blood",
+      "category": "happy_path",
+      "input": {
+        "system": "http://loinc.org",
+        "code": "2339-0"
+      },
+      "expected_output": {
+        "system": "http://loinc.org",
+        "code": "2339-0",
+        "display": "Glucose [Mass/volume] in Blood"
+      }
+    },
+    {
+      "id": "icd10cm_type2_diabetes_uncomplicated",
+      "category": "happy_path",
+      "input": {
+        "system": "http://hl7.org/fhir/sid/icd-10-cm",
+        "code": "E11.9"
+      },
+      "expected_output": {
+        "system": "http://hl7.org/fhir/sid/icd-10-cm",
+        "code": "E11.9",
+        "display": "Type 2 diabetes mellitus without complications"
+      }
+    },
+    {
+      "id": "icd10_who_cholera",
+      "category": "happy_path",
+      "input": {
+        "system": "http://hl7.org/fhir/sid/icd-10",
+        "code": "A00.0"
+      },
+      "expected_output": {
+        "system": "http://hl7.org/fhir/sid/icd-10",
+        "code": "A00.0",
+        "display": "Cholera due to Vibrio cholerae 01, biovar cholerae"
+      }
+    },
+    {
+      "id": "rxnorm_acetaminophen",
+      "category": "happy_path",
+      "input": {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "161"
+      },
+      "expected_output": {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "161",
+        "display": "acetaminophen"
+      }
+    },
+    {
+      "id": "error_snomed_unknown_numeric_id",
+      "category": "error_not_found",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "1234567890"
+      },
+      "expected_output": {
+        "error": true,
+        "status_code": 404
+      }
+    },
+    {
+      "id": "error_loinc_unknown_code",
+      "category": "error_not_found",
+      "input": {
+        "system": "http://loinc.org",
+        "code": "INVALID-LOINC-CODE-99999"
+      },
+      "expected_output": {
+        "error": true,
+        "status_code": 404
+      }
+    },
+    {
+      "id": "error_snomed_empty_code",
+      "category": "edge_case",
+      "notes": "Empty code; server maps to empty lookup / not found.",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": ""
+      },
+      "expected_output": {
+        "error": true,
+        "status_code": 404
+      }
+    },
+    {
+      "id": "error_snomed_whitespace_code",
+      "category": "edge_case",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "   "
+      },
+      "expected_output": {
+        "error": true,
+        "status_code": 404
+      }
+    },
+    {
+      "id": "error_snomed_non_numeric_expression",
+      "category": "edge_case",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "not-a-number"
+      },
+      "expected_output": {
+        "error": true,
+        "status_code": 404
+      }
+    },
+    {
+      "id": "error_unknown_code_system_uri",
+      "category": "error_client",
+      "notes": "tx.fhir.org returns 422 when the CodeSystem URL is not registered.",
+      "input": {
+        "system": "http://invalid-system.example.org/foo",
+        "code": "123"
+      },
+      "expected_output": {
+        "error": true,
+        "status_code": 422
+      }
+    }
+  ]
+}

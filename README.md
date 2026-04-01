@@ -70,3 +70,33 @@ MCP_TRANSPORT=http python server.py
 # FastMCP CLI
 fastmcp run server.py:mcp
 ```
+
+## Test
+
+Tests use [pytest](https://pytest.org/). Configuration is in `pytest.ini` (e.g. `testpaths`, `asyncio` mode). Run from the **repository root** with the virtual environment activated:
+
+```bash
+pytest -v
+```
+
+`-v` prints each test name and outcome; add `-x` to stop on the first failure, or `-k <substring>` to filter by name.
+
+### Markers
+
+Markers group tests by how they behave. This repo uses:
+
+| Marker | Meaning |
+|--------|---------|
+| `integration` | Hits a real FHIR terminology server (`FHIR_TERMINOLOGY_SERVER_URL` in `.env`). Needs network. |
+
+Examples:
+
+```bash
+# Only integration tests
+pytest -v -m integration
+
+# One file
+pytest -v test/lookup_test.py
+```
+
+Shared expected results for integration scenarios can live under `test/ground_truth/` (e.g. JSON files). Pytest discover it automatically.
