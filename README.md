@@ -1,4 +1,4 @@
-# FHIR Terminology MCP Wrapper
+# FHIR Terminology Server MCP Wrapper
 
 <p align="center">
   <img src="logo.png" alt="Model Context Protocol (MCP) plus HL7 FHIR" width="480" />
