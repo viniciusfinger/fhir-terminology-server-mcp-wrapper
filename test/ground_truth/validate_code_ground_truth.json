@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "terminology_service_base": "https://tx.fhir.org/r4",
+    "description": "Expected outputs for CodeSystem/$validate-code integration tests. Success cases assert result and display for stable codes. Error cases assert error and HTTP status only.",
+    "maintenance": "If tests fail after upstream content updates, refresh display strings from the same base URL.",
+    "supported_code_systems_exercised": [
+      "http://snomed.info/sct",
+      "http://loinc.org",
+      "http://hl7.org/fhir/sid/icd-10-cm",
+      "http://www.nlm.nih.gov/research/umls/rxnorm"
+    ]
+  },
+  "cases": [
+    {
+      "id": "snomed_diabetes_valid",
+      "category": "happy_path",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "73211009"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code": "73211009",
+        "result": true,
+        "display": "Diabetes mellitus"
+      }
+    },
+    {
+      "id": "snomed_clinical_finding_valid",
+      "category": "happy_path",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "404684003"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code": "404684003",
+        "result": true,
+        "display": "Clinical finding"
+      }
+    },
+    {
+      "id": "loinc_hemoglobin_valid",
+      "category": "happy_path",
+      "input": {
+        "system": "http://loinc.org",
+        "code": "718-7"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://loinc.org",
+        "code": "718-7",
+        "result": true,
+        "display": "Hemoglobin [Mass/volume] in Blood"
+      }
+    },
+    {
+      "id": "icd10cm_type2_diabetes_valid",
+      "category": "happy_path",
+      "input": {
+        "system": "http://hl7.org/fhir/sid/icd-10-cm",
+        "code": "E11.9"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://hl7.org/fhir/sid/icd-10-cm",
+        "code": "E11.9",
+        "result": true,
+        "display": "Type 2 diabetes mellitus without complications"
+      }
+    },
+    {
+      "id": "rxnorm_acetaminophen_valid",
+      "category": "happy_path",
+      "input": {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "161"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "161",
+        "result": true,
+        "display": "acetaminophen"
+      }
+    },
+    {
+      "id": "snomed_with_correct_display",
+      "category": "happy_path",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "73211009",
+        "display": "Diabetes mellitus"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code": "73211009",
+        "result": true
+      }
+    },
+    {
+      "id": "snomed_unknown_code",
+      "category": "error_not_found",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code": "9999999999"
+      },
+      "expected_output": {
+        "system": "http://snomed.info/sct",
+        "code": "9999999999",
+        "result": false
+      }
+    },
+    {
+      "id": "loinc_unknown_code",
+      "category": "error_not_found",
+      "input": {
+        "system": "http://loinc.org",
+        "code": "INVALID-LOINC-99999"
+      },
+      "expected_output": {
+        "system": "http://loinc.org",
+        "code": "INVALID-LOINC-99999",
+        "result": false
+      }
+    },
+    {
+      "id": "error_unknown_code_system",
+      "category": "error_client",
+      "notes": "tx.fhir.org returns 200 with result=false when the CodeSystem URL is not registered for $validate-code.",
+      "input": {
+        "system": "http://invalid-system.example.org/foo",
+        "code": "123"
+      },
+      "expected_output": {
+        "system": "http://invalid-system.example.org/foo",
+        "code": "123",
+        "result": false
+      }
+    }
+  ]
+}
