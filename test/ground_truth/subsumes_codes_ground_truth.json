@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "terminology_service_base": "https://tx.fhir.org/r4",
+    "description": "Expected outputs for CodeSystem/$subsumes integration tests. SNOMED CT hierarchical relationships are used because they are well-established and stable.",
+    "maintenance": "If tests fail after upstream content updates, verify hierarchy against the same base URL.",
+    "supported_code_systems_exercised": [
+      "http://snomed.info/sct"
+    ]
+  },
+  "cases": [
+    {
+      "id": "snomed_same_code_equivalent",
+      "category": "happy_path",
+      "notes": "A code compared to itself is always equivalent.",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code_a": "73211009",
+        "code_b": "73211009"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code_a": "73211009",
+        "code_b": "73211009",
+        "outcome": "equivalent"
+      }
+    },
+    {
+      "id": "snomed_clinical_finding_subsumes_diabetes",
+      "category": "happy_path",
+      "notes": "Clinical finding (404684003) is an ancestor of Diabetes mellitus (73211009).",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code_a": "404684003",
+        "code_b": "73211009"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code_a": "404684003",
+        "code_b": "73211009",
+        "outcome": "subsumes"
+      }
+    },
+    {
+      "id": "snomed_diabetes_subsumed_by_clinical_finding",
+      "category": "happy_path",
+      "notes": "Reverse of the above: Diabetes mellitus is subsumed-by Clinical finding.",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code_a": "73211009",
+        "code_b": "404684003"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code_a": "73211009",
+        "code_b": "404684003",
+        "outcome": "subsumed-by"
+      }
+    },
+    {
+      "id": "snomed_unrelated_codes_not_subsumed",
+      "category": "happy_path",
+      "notes": "Diabetes mellitus (73211009) and Myocardial infarction (22298006) are unrelated.",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code_a": "73211009",
+        "code_b": "22298006"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code_a": "73211009",
+        "code_b": "22298006",
+        "outcome": "not-subsumed"
+      }
+    },
+    {
+      "id": "snomed_disease_subsumes_diabetes",
+      "category": "happy_path",
+      "notes": "Disease (64572001) is an ancestor of Diabetes mellitus (73211009).",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code_a": "64572001",
+        "code_b": "73211009"
+      },
+      "expected_output": {
+        "error": false,
+        "system": "http://snomed.info/sct",
+        "code_a": "64572001",
+        "code_b": "73211009",
+        "outcome": "subsumes"
+      }
+    },
+    {
+      "id": "error_snomed_invalid_code_a",
+      "category": "error_not_found",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code_a": "9999999999",
+        "code_b": "73211009"
+      },
+      "expected_output": {
+        "error": true
+      }
+    },
+    {
+      "id": "error_snomed_invalid_both_codes",
+      "category": "error_not_found",
+      "input": {
+        "system": "http://snomed.info/sct",
+        "code_a": "9999999999",
+        "code_b": "8888888888"
+      },
+      "expected_output": {
+        "error": true
+      }
+    },
+    {
+      "id": "error_unknown_code_system",
+      "category": "error_client",
+      "notes": "Subsumption is not possible against an unknown system.",
+      "input": {
+        "system": "http://invalid-system.example.org/foo",
+        "code_a": "123",
+        "code_b": "456"
+      },
+      "expected_output": {
+        "error": true
+      }
+    }
+  ]
+}
