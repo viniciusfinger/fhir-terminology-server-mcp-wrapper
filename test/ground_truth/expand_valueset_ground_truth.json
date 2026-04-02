@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "terminology_service_base": "https://tx.fhir.org/r4",
+    "description": "Expected outputs for ValueSet/$expand integration tests. Uses small, stable FHIR-defined ValueSets to assert total and structure. Contains lists are not asserted in ground truth due to potential ordering variation.",
+    "maintenance": "If tests fail after upstream content updates, verify ValueSet membership against the same base URL.",
+    "value_sets_exercised": [
+      "http://hl7.org/fhir/ValueSet/administrative-gender",
+      "http://hl7.org/fhir/ValueSet/observation-status",
+      "http://hl7.org/fhir/ValueSet/publication-status"
+    ]
+  },
+  "cases": [
+    {
+      "id": "admin_gender_full_expand",
+      "category": "happy_path",
+      "notes": "administrative-gender has exactly 4 codes: male, female, other, unknown.",
+      "input": {
+        "url": "http://hl7.org/fhir/ValueSet/administrative-gender"
+      },
+      "expected_output": {
+        "error": false,
+        "url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "total": 4
+      }
+    },
+    {
+      "id": "observation_status_full_expand",
+      "category": "happy_path",
+      "input": {
+        "url": "http://hl7.org/fhir/ValueSet/observation-status"
+      },
+      "expected_output": {
+        "error": false,
+        "url": "http://hl7.org/fhir/ValueSet/observation-status"
+      }
+    },
+    {
+      "id": "publication_status_full_expand",
+      "category": "happy_path",
+      "notes": "publication-status has exactly 4 codes: draft, active, retired, unknown.",
+      "input": {
+        "url": "http://hl7.org/fhir/ValueSet/publication-status"
+      },
+      "expected_output": {
+        "error": false,
+        "url": "http://hl7.org/fhir/ValueSet/publication-status",
+        "total": 4
+      }
+    },
+    {
+      "id": "admin_gender_with_count_limit",
+      "category": "happy_path",
+      "notes": "Limiting count to 2 should return at most 2 entries in contains.",
+      "input": {
+        "url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "count": 2
+      },
+      "expected_output": {
+        "error": false,
+        "url": "http://hl7.org/fhir/ValueSet/administrative-gender"
+      }
+    },
+    {
+      "id": "admin_gender_with_filter",
+      "category": "happy_path",
+      "notes": "Filtering for 'male' should narrow the expansion.",
+      "input": {
+        "url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "filter": "male"
+      },
+      "expected_output": {
+        "error": false,
+        "url": "http://hl7.org/fhir/ValueSet/administrative-gender"
+      }
+    },
+    {
+      "id": "error_invalid_valueset_url",
+      "category": "error_client",
+      "input": {
+        "url": "http://invalid.example.org/ValueSet/does-not-exist"
+      },
+      "expected_output": {
+        "error": true
+      }
+    }
+  ]
+}
