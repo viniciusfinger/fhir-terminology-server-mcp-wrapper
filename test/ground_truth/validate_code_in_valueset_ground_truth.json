@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "terminology_service_base": "https://tx.fhir.org/r4",
+    "description": "Expected outputs for ValueSet/$validate-code integration tests. Tests exercise well-known FHIR ValueSets with stable membership.",
+    "maintenance": "If tests fail after upstream content updates, verify membership against the same base URL.",
+    "value_sets_exercised": [
+      "http://hl7.org/fhir/ValueSet/administrative-gender",
+      "http://hl7.org/fhir/ValueSet/observation-status"
+    ]
+  },
+  "cases": [
+    {
+      "id": "admin_gender_male_valid",
+      "category": "happy_path",
+      "input": {
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male"
+      },
+      "expected_output": {
+        "error": false,
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male",
+        "result": true,
+        "display": "Male"
+      }
+    },
+    {
+      "id": "admin_gender_female_valid",
+      "category": "happy_path",
+      "input": {
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "female"
+      },
+      "expected_output": {
+        "error": false,
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "female",
+        "result": true,
+        "display": "Female"
+      }
+    },
+    {
+      "id": "admin_gender_unknown_valid",
+      "category": "happy_path",
+      "input": {
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "unknown"
+      },
+      "expected_output": {
+        "error": false,
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "unknown",
+        "result": true,
+        "display": "Unknown"
+      }
+    },
+    {
+      "id": "observation_status_final_valid",
+      "category": "happy_path",
+      "input": {
+        "valueset_url": "http://hl7.org/fhir/ValueSet/observation-status",
+        "system": "http://hl7.org/fhir/observation-status",
+        "code": "final"
+      },
+      "expected_output": {
+        "error": false,
+        "valueset_url": "http://hl7.org/fhir/ValueSet/observation-status",
+        "system": "http://hl7.org/fhir/observation-status",
+        "code": "final",
+        "result": true,
+        "display": "Final"
+      }
+    },
+    {
+      "id": "admin_gender_with_correct_display",
+      "category": "happy_path",
+      "input": {
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "male",
+        "display": "Male"
+      },
+      "expected_output": {
+        "error": false,
+        "result": true
+      }
+    },
+    {
+      "id": "admin_gender_code_not_in_valueset",
+      "category": "error_not_found",
+      "notes": "Code does not exist in the administrative-gender code system.",
+      "input": {
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://hl7.org/fhir/administrative-gender",
+        "code": "nonexistent-code"
+      },
+      "expected_output": {
+        "result": false
+      }
+    },
+    {
+      "id": "wrong_system_for_valueset",
+      "category": "error_not_found",
+      "notes": "SNOMED code tested against administrative-gender ValueSet — should not match.",
+      "input": {
+        "valueset_url": "http://hl7.org/fhir/ValueSet/administrative-gender",
+        "system": "http://snomed.info/sct",
+        "code": "73211009"
+      },
+      "expected_output": {
+        "result": false
+      }
+    },
+    {
+      "id": "error_invalid_valueset_url",
+      "category": "error_client",
+      "input": {
+        "valueset_url": "http://invalid.example.org/ValueSet/does-not-exist",
+        "system": "http://snomed.info/sct",
+        "code": "73211009"
+      },
+      "expected_output": {
+        "error": true
+      }
+    }
+  ]
+}
