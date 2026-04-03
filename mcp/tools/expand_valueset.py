@@ -18,13 +18,19 @@ def _contains_entry(item: dict[str, Any]) -> dict[str, Any]:
 
 @tool
 async def expand_valueset(
-    url: Annotated[str, "Canonical URL of the ValueSet to expand"],
-    filter: Annotated[str | None, "Text filter applied during expansion (server-dependent)"] = None,
-    count: Annotated[int | None, "Maximum number of concepts to return (default 50)"] = None,
+    url: Annotated[str, "Canonical URL of the ValueSet to expand (e.g. 'http://hl7.org/fhir/ValueSet/administrative-gender'). Must be a full URL."],
+    filter: Annotated[str | None, "Free-text search to narrow results (e.g. 'diab' to find diabetes-related codes). Behavior is server-dependent."] = None,
+    count: Annotated[int | None, "Maximum number of codes to return. Defaults to 50 if omitted. Use a small value when you only need a few examples."] = None,
 ) -> dict:
-    """Expands a ValueSet against the terminology server (ValueSet/$expand).
+    """List all codes contained in a ValueSet by expanding it.
 
-    Returns a simplified list of codes under `contains` suitable for LLM consumption.
+    Returns: {url, contains: [{system, code, display}], total}.
+    contains is a flat list of concepts; total is the full count when provided by the server.
+    Defaults to returning at most 50 codes — set count to increase or decrease.
+    Does NOT validate a specific code (use validate_code_in_valueset for that).
+    Does NOT search for ValueSets by name — you must provide the exact canonical URL.
+
+    Example: expand_valueset(url="http://hl7.org/fhir/ValueSet/administrative-gender") → contains: [{code: "male", display: "Male"}, {code: "female", display: "Female"}, ...].
     """
     effective_count = 50 if count is None else count
     params: dict = {"url": url, "filter": filter, "count": effective_count}

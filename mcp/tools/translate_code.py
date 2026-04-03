@@ -51,14 +51,19 @@ def _parse_translate_matches(data: dict[str, Any]) -> list[dict[str, Any]]:
 
 @tool
 async def translate_code(
-    system: Annotated[str, "URI of the source code system"],
-    code: Annotated[str, "Source code to translate"],
-    concept_map_url: Annotated[str, "Canonical URL of the ConceptMap to use"],
-    target_system: Annotated[str | None, "Optional target code system URI to filter mappings"] = None,
+    system: Annotated[str, "Canonical URI of the source code system (e.g. 'http://hl7.org/fhir/administrative-gender')."],
+    code: Annotated[str, "The source code to translate (e.g. 'male'). Must be non-empty."],
+    concept_map_url: Annotated[str, "Canonical URL of the ConceptMap that defines the mapping (e.g. 'http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3'). You must know the ConceptMap URL beforehand."],
+    target_system: Annotated[str | None, "If provided, only return mappings to this target code system URI."] = None,
 ) -> dict:
-    """Translates a code using a ConceptMap (ConceptMap/$translate).
+    """Translate a code from one code system to another using a ConceptMap.
 
-    Returns a list of `matches` with target concepts when the server finds mappings.
+    Returns: {system, code, concept_map_url, result (true/false), matches: [{equivalence, concept: {system, code, display}}]}.
+    Each match includes an equivalence level (equivalent, wider, narrower, etc.) and the target concept.
+    Does NOT discover ConceptMaps — you must provide the concept_map_url.
+    Does NOT look up or validate codes (use lookup_code or validate_code for that).
+
+    Example: translate_code(system="http://hl7.org/fhir/administrative-gender", code="male", concept_map_url="http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v3") → matches with target code "M" in v3-AdministrativeGender.
     """
     params: dict = {"system": system, "code": code, "url": concept_map_url, "targetsystem": target_system}
     data = await fhir_get(
