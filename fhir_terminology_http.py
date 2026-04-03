@@ -6,7 +6,13 @@ from typing import Any
 import httpx
 from fastmcp.exceptions import ToolError
 
-from config import FHIR_SERVER_URL
+from config import (
+    FHIR_HTTP_CACHE_ENABLED,
+    FHIR_HTTP_CACHE_MAX_ENTRIES,
+    FHIR_HTTP_CACHE_TTL_SECONDS,
+    FHIR_SERVER_URL,
+)
+from fhir_response_cache import TTLRUCache, is_cacheable_path
 
 FHIR_JSON_ACCEPT = "application/fhir+json"
 HTTP_TIMEOUT = 30.0
@@ -14,6 +20,19 @@ ERROR_DETAILS_MAX_LEN = 500
 
 _client: httpx.AsyncClient | None = None
 _client_loop: asyncio.AbstractEventLoop | None = None
+
+_response_cache: TTLRUCache | None = (
+    TTLRUCache(
+        max_entries=FHIR_HTTP_CACHE_MAX_ENTRIES,
+        ttl_seconds=FHIR_HTTP_CACHE_TTL_SECONDS,
+    )
+    if FHIR_HTTP_CACHE_ENABLED
+    else None
+)
+
+
+def _response_cache_key(path: str, query: dict[str, str]) -> tuple[str, str, tuple[tuple[str, str], ...]]:
+    return (FHIR_SERVER_URL, path, tuple(sorted(query.items())))
 
 
 def _get_client() -> httpx.AsyncClient:
@@ -70,6 +89,13 @@ async def fhir_get(
         path = "/" + path
     query = _clean_params(params)
 
+    cache = _response_cache
+
+    if cache is not None and is_cacheable_path(path):
+        cached = cache.get(_response_cache_key(path, query))
+        if cached is not None:
+            return cached
+
     client = _get_client()
     response = await client.get(path, params=query)
 
@@ -79,7 +105,12 @@ async def fhir_get(
             f"{error_message} (HTTP {response.status_code}): {detail}"
         )
 
-    return response.json()
+    data = response.json()
+
+    if cache is not None and is_cacheable_path(path):
+        cache.set(_response_cache_key(path, query), data)
+        
+    return data
 
 
 def parameters_flat_map(data: dict[str, Any]) -> dict[str, Any]:
