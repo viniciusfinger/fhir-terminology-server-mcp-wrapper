@@ -2,7 +2,7 @@ from typing import Annotated, Any
 
 from fastmcp.tools import tool
 
-from fhir_terminology_http import fhir_get, is_fhir_error_payload
+from fhir_terminology_http import fhir_get
 
 
 def _contains_entry(item: dict[str, Any]) -> dict[str, Any]:
@@ -33,8 +33,6 @@ async def expand_valueset(
         params,
         error_message=f"Error expanding ValueSet '{url}'",
     )
-    if is_fhir_error_payload(data):
-        return data
 
     expansion = data.get("expansion") or {}
     raw = expansion.get("contains") or []

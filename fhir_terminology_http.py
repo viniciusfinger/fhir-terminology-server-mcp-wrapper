@@ -4,6 +4,7 @@ import asyncio
 from typing import Any
 
 import httpx
+from fastmcp.exceptions import ToolError
 
 from config import FHIR_SERVER_URL
 
@@ -40,6 +41,20 @@ def _clean_params(params: dict[str, str | int | bool | None]) -> dict[str, str]:
     return out
 
 
+def _extract_error_detail(response: httpx.Response) -> str:
+    """Extract diagnostics from a FHIR OperationOutcome, fall back to raw text."""
+    try:
+        body = response.json()
+        if body.get("resourceType") == "OperationOutcome":
+            for issue in body.get("issue", []):
+                diag = issue.get("diagnostics")
+                if diag:
+                    return str(diag)[:ERROR_DETAILS_MAX_LEN]
+    except Exception:
+        pass
+    return response.text[:ERROR_DETAILS_MAX_LEN]
+
+
 async def fhir_get(
     path: str,
     params: dict[str, str | int | bool | None],
@@ -48,7 +63,7 @@ async def fhir_get(
 ) -> dict[str, Any]:
     """GET {base_url}{path} with FHIR JSON Accept header.
 
-    On non-200, returns {error, status_code, message, details}.
+    Raises ToolError (isError=true in MCP) on non-200 responses.
     On success, returns the parsed JSON object (dict).
     """
     if not path.startswith("/"):
@@ -59,12 +74,10 @@ async def fhir_get(
     response = await client.get(path, params=query)
 
     if response.status_code != 200:
-        return {
-            "error": True,
-            "status_code": response.status_code,
-            "message": error_message,
-            "details": response.text[:ERROR_DETAILS_MAX_LEN],
-        }
+        detail = _extract_error_detail(response)
+        raise ToolError(
+            f"{error_message} (HTTP {response.status_code}): {detail}"
+        )
 
     return response.json()
 
@@ -89,9 +102,5 @@ def parameters_flat_map(data: dict[str, Any]) -> dict[str, Any]:
             if key.startswith("value") and val is not None:
                 out[name] = val
                 break
-    
+
     return out
-
-
-def is_fhir_error_payload(payload: dict[str, Any]) -> bool:
-    return payload.get("error") is True

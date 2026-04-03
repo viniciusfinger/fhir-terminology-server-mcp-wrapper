@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastmcp.tools import tool
 
-from fhir_terminology_http import fhir_get, is_fhir_error_payload, parameters_flat_map
+from fhir_terminology_http import fhir_get, parameters_flat_map
 
 
 @tool
@@ -17,25 +17,22 @@ async def validate_code(
     Returns whether the code is valid and the server-recommended display when available.
     """
     params: dict = {"system": system, "code": code, "display": display, "version": version}
-    
+
     data = await fhir_get(
         "/CodeSystem/$validate-code",
         params,
         error_message=f"Error validating code '{code}' in system '{system}'",
     )
 
-    if is_fhir_error_payload(data):
-        return data
-
     flat = parameters_flat_map(data)
-    
+
     out: dict = {"system": system, "code": code}
-    
+
     if "result" in flat:
         out["result"] = bool(flat["result"])
     if "message" in flat and flat["message"] is not None:
         out["message"] = flat["message"]
     if "display" in flat and flat["display"] is not None:
         out["display"] = flat["display"]
-    
+
     return out

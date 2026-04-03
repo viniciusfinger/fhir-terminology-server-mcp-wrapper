@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastmcp.tools import tool
 
-from fhir_terminology_http import fhir_get, is_fhir_error_payload, parameters_flat_map
+from fhir_terminology_http import fhir_get, parameters_flat_map
 
 
 @tool
@@ -14,15 +14,12 @@ async def validate_code_in_valueset(
 ) -> dict:
     """Validates a code against a specific ValueSet (ValueSet/$validate-code)."""
     params: dict = {"url": valueset_url, "system": system, "code": code, "display": display}
-    
+
     data = await fhir_get(
         "/ValueSet/$validate-code",
         params,
         error_message=f"Error validating code '{code}' in ValueSet '{valueset_url}'",
     )
-
-    if is_fhir_error_payload(data):
-        return data
 
     flat = parameters_flat_map(data)
 
@@ -34,5 +31,5 @@ async def validate_code_in_valueset(
         out["message"] = flat["message"]
     if "display" in flat and flat["display"] is not None:
         out["display"] = flat["display"]
-    
+
     return out

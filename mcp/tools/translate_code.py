@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from fastmcp.tools import tool
 
-from fhir_terminology_http import fhir_get, is_fhir_error_payload, parameters_flat_map
+from fhir_terminology_http import fhir_get, parameters_flat_map
 
 
 def _part_map(parts: list[dict[str, Any]] | None) -> dict[str, Any]:
@@ -66,8 +66,6 @@ async def translate_code(
         params,
         error_message=f"Error translating code '{code}' with map '{concept_map_url}'",
     )
-    if is_fhir_error_payload(data):
-        return data
 
     flat = parameters_flat_map(data)
     out: dict[str, Any] = {

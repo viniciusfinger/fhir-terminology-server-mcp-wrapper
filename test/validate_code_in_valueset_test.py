@@ -38,13 +38,10 @@ def _case_id(case: dict[str, Any]) -> str:
 
 def _assert_matches_expected(actual: dict[str, Any], expected: dict[str, Any]) -> None:
     for key, exp_val in expected.items():
-        if key == "error" and exp_val is False:
-            assert actual.get("error") is not True, (
-                f"expected success (no error), got {actual!r}"
-            )
-        else:
-            got = actual.get(key)
-            assert got == exp_val, f"key {key!r}: expected {exp_val!r}, got {got!r}"
+        if key in ("error", "status_code"):
+            continue
+        got = actual.get(key)
+        assert got == exp_val, f"key {key!r}: expected {exp_val!r}, got {got!r}"
 
 
 @pytest.mark.integration
@@ -55,8 +52,18 @@ async def test_validate_code_in_valueset_matches_ground_truth(case: dict[str, An
     inp = case["input"]
 
     async with Client(mcp) as client:
-        result = await client.call_tool("validate_code_in_valueset", inp)
+        result = await client.call_tool("validate_code_in_valueset", inp, raise_on_error=False)
 
+    if expected.get("error") is True:
+        assert result.is_error, f"expected isError=True, got {result!r}"
+        error_text = result.content[0].text if result.content else ""
+        if "status_code" in expected:
+            assert str(expected["status_code"]) in error_text, (
+                f"expected HTTP {expected['status_code']} in error: {error_text}"
+            )
+        return
+
+    assert not result.is_error, f"unexpected error: {result!r}"
     actual = result.data if result.data is not None else result.structured_content
     assert actual is not None and isinstance(actual, dict), f"unexpected result: {result!r}"
 

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastmcp.tools import tool
 
-from fhir_terminology_http import fhir_get, is_fhir_error_payload, parameters_flat_map
+from fhir_terminology_http import fhir_get, parameters_flat_map
 
 
 @tool
@@ -20,8 +20,6 @@ async def subsumes_codes(
         {"system": system, "codeA": code_a, "codeB": code_b},
         error_message=f"Error testing subsumption for '{code_a}' and '{code_b}' in '{system}'",
     )
-    if is_fhir_error_payload(data):
-        return data
 
     flat = parameters_flat_map(data)
     out: dict = {"system": system, "code_a": code_a, "code_b": code_b}

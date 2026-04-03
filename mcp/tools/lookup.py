@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastmcp.tools import tool
 
-from fhir_terminology_http import fhir_get, is_fhir_error_payload
+from fhir_terminology_http import fhir_get
 
 
 @tool
@@ -20,8 +20,6 @@ async def lookup_code(
         {"system": system, "code": code},
         error_message=f"Error looking up code '{code}' in system '{system}'",
     )
-    if is_fhir_error_payload(data):
-        return data
 
     result: dict = {"system": system, "code": code}
 
