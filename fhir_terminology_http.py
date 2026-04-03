@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import httpx
@@ -9,6 +10,22 @@ from config import FHIR_SERVER_URL
 FHIR_JSON_ACCEPT = "application/fhir+json"
 HTTP_TIMEOUT = 30.0
 ERROR_DETAILS_MAX_LEN = 500
+
+_client: httpx.AsyncClient | None = None
+_client_loop: asyncio.AbstractEventLoop | None = None
+
+
+def _get_client() -> httpx.AsyncClient:
+    global _client, _client_loop
+    loop = asyncio.get_running_loop()
+    if _client is None or _client.is_closed or _client_loop is not loop:
+        _client = httpx.AsyncClient(
+            base_url=FHIR_SERVER_URL.rstrip("/"),
+            headers={"Accept": FHIR_JSON_ACCEPT},
+            timeout=HTTP_TIMEOUT,
+        )
+        _client_loop = loop
+    return _client
 
 
 def _clean_params(params: dict[str, str | int | bool | None]) -> dict[str, str]:
@@ -29,7 +46,7 @@ async def fhir_get(
     *,
     error_message: str,
 ) -> dict[str, Any]:
-    """GET {FHIR_SERVER_URL}{path} with FHIR JSON Accept header.
+    """GET {base_url}{path} with FHIR JSON Accept header.
 
     On non-200, returns {error, status_code, message, details}.
     On success, returns the parsed JSON object (dict).
@@ -38,12 +55,8 @@ async def fhir_get(
         path = "/" + path
     query = _clean_params(params)
 
-    async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
-        response = await client.get(
-            f"{FHIR_SERVER_URL.rstrip('/')}{path}",
-            params=query,
-            headers={"Accept": FHIR_JSON_ACCEPT},
-        )
+    client = _get_client()
+    response = await client.get(path, params=query)
 
     if response.status_code != 200:
         return {
