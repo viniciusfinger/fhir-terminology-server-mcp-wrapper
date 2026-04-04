@@ -28,6 +28,36 @@ Tools and resources are implemented with [FastMCP](https://github.com/jlowin/fas
 - **Hierarchical checks** — `subsumes_codes` ([`CodeSystem/$subsumes`](https://hl7.org/fhir/codesystem-operation-subsumes.html)) for is-a relationships where the server supports them.
 - **Swap backends** — Use the public terminology service for demos, or a private endpoint for restricted or local code systems.
 
+## Connect your agents to the free hosted server
+
+A **free** public instance runs on [Render](https://render.com/). Point any MCP client that supports **Streamable HTTP** at the endpoint below.
+
+Note: on the free tier the service may spin down when idle. The first request after idle can take **up to about 50 seconds** while the instance wakes up; later calls are much faster.
+
+**Endpoint:** `https://fhir-terminology-server-mcp-wrapper.onrender.com/mcp`
+
+**Example with Python MCP client:** uses the official [`mcp`](https://github.com/modelcontextprotocol/python-sdk) SDK with Streamable HTTP:
+
+```python
+import asyncio
+
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
+
+MCP_URL = "https://fhir-terminology-server-mcp-wrapper.onrender.com/mcp"
+
+async def main() -> None:
+    async with streamable_http_client(MCP_URL) as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            tools = await session.list_tools()
+            print([t.name for t in tools.tools])
+            
+            await session.call_tool("lookup_code", {"system": "http://loinc.org", "code": "718-7"})
+
+asyncio.run(main())
+```
+
 ## MCP tools (FHIR Terminology Services)
 
 Each tool maps to a **GET** on the configured server's base URL, using the FHIR **operation** named below (R4-style paths). Parameters are the query parameters those operations expect; responses are normalized into small JSON objects for the client.
