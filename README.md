@@ -89,8 +89,7 @@ copy .env.example .env
 | `FHIR_HTTP_CACHE_TTL_SECONDS` | Time-to-live for cache entries (seconds) | `300` |
 | `FHIR_HTTP_CACHE_MAX_ENTRIES` | Maximum cached responses | `512` |
 | `MCP_SERVER_NAME` | MCP wrapper display name | `FHIR Terminology Server MCP Wrapper` |
-| `MCP_TRANSPORT` | Wrapper transport (`stdio` or `http`) | `stdio` |
-| `MCP_PORT` | Port for HTTP transport | `8000` |
+| `PORT` | Port for HTTP transport | `8000` |
 | `MCP_ENV` | Set to `development` to reload `mcp/` modules on change (FileSystemProvider) | `production` |
 
 ## Run
@@ -98,9 +97,6 @@ copy .env.example .env
 ```bash
 # stdio (default for IDE integration)
 python server.py
-
-# HTTP
-MCP_TRANSPORT=http python server.py
 
 # FastMCP CLI
 fastmcp run server.py:mcp
